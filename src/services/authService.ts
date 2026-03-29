@@ -27,6 +27,25 @@ async function getErrorMessage(response: Response, fallback: string): Promise<st
   }
 }
 
+function isNetworkError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+
+  const message = error.message.toLowerCase();
+  return (
+    error.name === 'TypeError' ||
+    message.includes('failed to fetch') ||
+    message.includes('networkerror') ||
+    message.includes('load failed')
+  );
+}
+
+function shouldUseMockFallback(error: unknown): boolean {
+  return (
+    isNetworkError(error) &&
+    (!import.meta.env.PROD || API_CONSTANTS.ALLOW_AUTH_MOCK_FALLBACK_IN_PROD)
+  );
+}
+
 export const AuthService = {
   /**
    * README ref: "Login Flow"
@@ -49,18 +68,18 @@ export const AuthService = {
       const message = await getErrorMessage(response, `Login failed: ${response.status}`);
       throw new Error(message);
     } catch (error) {
-      if (!import.meta.env.PROD) {
-      console.warn('Backend unavailable, using mock login:', error);
-      // Fallback: return mock auth response for demo
-      return {
-        access_token: 'mock_jwt_token_' + Date.now(),
-        refresh_token: 'mock_refresh_token_' + Date.now(),
-        user: {
-          id: 'user_' + Date.now(),
-          email,
-          role: '', // Role will be set during role selection or from stored data
-        },
-      };
+      if (shouldUseMockFallback(error)) {
+        console.warn('Backend unavailable, using mock login:', error);
+        // Fallback: return mock auth response for demo
+        return {
+          access_token: 'mock_jwt_token_' + Date.now(),
+          refresh_token: 'mock_refresh_token_' + Date.now(),
+          user: {
+            id: 'user_' + Date.now(),
+            email,
+            role: '', // Role will be set during role selection or from stored data
+          },
+        };
       }
 
       if (error instanceof Error) {
@@ -97,17 +116,17 @@ export const AuthService = {
       const message = await getErrorMessage(response, `Registration failed: ${response.status}`);
       throw new Error(message);
     } catch (error) {
-      if (!import.meta.env.PROD) {
-      console.warn('Backend unavailable, using mock registration:', error);
-      return {
-        access_token: 'mock_jwt_token_' + Date.now(),
-        refresh_token: 'mock_refresh_token_' + Date.now(),
-        user: {
-          id: 'user_' + Date.now(),
-          email,
-          role,
-        },
-      };
+      if (shouldUseMockFallback(error)) {
+        console.warn('Backend unavailable, using mock registration:', error);
+        return {
+          access_token: 'mock_jwt_token_' + Date.now(),
+          refresh_token: 'mock_refresh_token_' + Date.now(),
+          user: {
+            id: 'user_' + Date.now(),
+            email,
+            role,
+          },
+        };
       }
 
       if (error instanceof Error) {

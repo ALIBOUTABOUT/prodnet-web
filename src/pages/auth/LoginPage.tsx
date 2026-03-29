@@ -17,6 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Validators } from '@/core/validators';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import logoImage from '../../../logo.png';
 
 export function LoginPage() {
   const { login, isLoading, error, isAuthenticated, user } = useAuth();
@@ -26,9 +27,6 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState('');
-  const [logoFailed, setLogoFailed] = useState(false);
-
-  const logoSrc = `${import.meta.env.BASE_URL}logo.png`;
 
   // Redirect if already logged in
   useEffect(() => {
@@ -63,16 +61,7 @@ export function LoginPage() {
       <div style={styles.card}>
         {/* Logo */}
         <div style={styles.logoSection}>
-          {!logoFailed ? (
-            <img
-              src={logoSrc}
-              alt="ProdNet"
-              style={styles.logo}
-              onError={() => setLogoFailed(true)}
-            />
-          ) : (
-            <div style={styles.logoFallback}>ProdNet</div>
-          )}
+          <img src={logoImage} alt="ProdNet" style={styles.logo} />
           <p style={styles.subtitle}>Agricultural Project Management Platform</p>
         </div>
 
@@ -165,13 +154,6 @@ const styles: Record<string, React.CSSProperties> = {
   logo: {
     height: '48px',
     objectFit: 'contain',
-  },
-  logoFallback: {
-    fontSize: '1.75rem',
-    fontWeight: 800,
-    letterSpacing: '0.02em',
-    color: '#1F7A45',
-    lineHeight: 1,
   },
   subtitle: {
     margin: '0.5rem 0 0',

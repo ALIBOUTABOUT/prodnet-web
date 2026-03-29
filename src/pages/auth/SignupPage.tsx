@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Validators } from '@/core/validators';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import logoImage from '../../../logo.png';
 
 export function SignupPage() {
   const { signup, isAuthenticated, needsRoleSelection, error } = useAuth();
@@ -66,7 +67,7 @@ export function SignupPage() {
       <div style={styles.card}>
         {/* Logo */}
         <div style={styles.logoSection}>
-          <img src="/logo.png" alt="ProdNet" style={styles.logo} />
+          <img src={logoImage} alt="ProdNet" style={styles.logo} />
           <p style={styles.subtitle}>Join the agricultural ecosystem</p>
         </div>
 

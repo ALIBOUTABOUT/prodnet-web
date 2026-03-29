@@ -16,6 +16,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { UserRole } from '@/models/user';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { Sprout, Lightbulb, TrendingUp, ArrowRight } from 'lucide-react';
+import logoImage from '../../../logo.png';
 
 interface RoleOption {
   role: UserRole;
@@ -85,7 +86,7 @@ export function RoleSelectionPage() {
       <div style={styles.container}>
         {/* Header */}
         <div style={styles.header}>
-          <img src="/logo.png" alt="ProdNet" style={styles.logo} />
+          <img src={logoImage} alt="ProdNet" style={styles.logo} />
           <h1 style={styles.title}>Choose Your Role</h1>
           <p style={styles.subtitle}>
             Select how you'd like to participate in the ProdNet ecosystem
