@@ -54,7 +54,13 @@ export function ProtectedRoute({
 
   // Profile completion check
   if (requiresProfileCompletion && !hasCompletedProfile) {
-    return <Navigate to="/complete-profile" replace />;
+    const profileRoutes: Record<UserRole, string> = {
+      Farmer: '/farmer',
+      Expert: '/expert/complete-profile',
+      Investor: '/investor',
+    };
+
+    return <Navigate to={profileRoutes[user?.role || 'Investor']} replace />;
   }
 
   return <>{children}</>;

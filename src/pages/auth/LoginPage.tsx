@@ -26,6 +26,9 @@ export function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [validationError, setValidationError] = useState('');
+  const [logoFailed, setLogoFailed] = useState(false);
+
+  const logoSrc = `${import.meta.env.BASE_URL}logo.png`;
 
   // Redirect if already logged in
   useEffect(() => {
@@ -60,7 +63,16 @@ export function LoginPage() {
       <div style={styles.card}>
         {/* Logo */}
         <div style={styles.logoSection}>
-          <img src="/logo.png" alt="ProdNet" style={styles.logo} />
+          {!logoFailed ? (
+            <img
+              src={logoSrc}
+              alt="ProdNet"
+              style={styles.logo}
+              onError={() => setLogoFailed(true)}
+            />
+          ) : (
+            <div style={styles.logoFallback}>ProdNet</div>
+          )}
           <p style={styles.subtitle}>Agricultural Project Management Platform</p>
         </div>
 
@@ -153,6 +165,13 @@ const styles: Record<string, React.CSSProperties> = {
   logo: {
     height: '48px',
     objectFit: 'contain',
+  },
+  logoFallback: {
+    fontSize: '1.75rem',
+    fontWeight: 800,
+    letterSpacing: '0.02em',
+    color: '#1F7A45',
+    lineHeight: 1,
   },
   subtitle: {
     margin: '0.5rem 0 0',

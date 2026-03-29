@@ -19,6 +19,21 @@ import { User, UserRole } from '@/models/user';
 import { AuthService } from '@/services/authService';
 import { StorageService } from '@/services/storageService';
 
+function normalizeUserRole(role: string | null | undefined): UserRole {
+  const normalized = (role || '').trim().toLowerCase();
+
+  switch (normalized) {
+    case 'farmer':
+      return 'Farmer';
+    case 'expert':
+      return 'Expert';
+    case 'investor':
+      return 'Investor';
+    default:
+      return 'Investor';
+  }
+}
+
 // ── State Shape ───────────────────────────────────
 
 interface AuthState {
@@ -149,10 +164,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const profileCompleted = StorageService.getProfileCompleted();
 
     if (token && userData) {
+      const normalizedUser: User = {
+        ...userData,
+        role: normalizeUserRole(userData.role),
+      };
+
       dispatch({
         type: 'RESTORE_SESSION',
-        payload: { user: userData, token, profileCompleted },
+        payload: { user: normalizedUser, token, profileCompleted },
       });
+
+      StorageService.saveUserData(normalizedUser);
+      StorageService.saveUserRole(normalizedUser.role);
     }
   }, []);
 
@@ -167,7 +190,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const user: User = {
         id: response.user.id,
         email: response.user.email,
-        role: (response.user.role || 'Investor') as UserRole,
+        role: normalizeUserRole(response.user.role),
         hasCompletedProfile: true, // For login, assume profile is already completed
       };
 
@@ -179,7 +202,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       dispatch({ type: 'LOGIN_SUCCESS', payload: { user, token: response.access_token } });
     } catch (error) {
-      dispatch({ type: 'SET_ERROR', payload: 'Login failed. Please check your credentials.' });
+      const message = error instanceof Error ? error.message : 'Login failed. Please check your credentials.';
+      dispatch({ type: 'SET_ERROR', payload: message });
     }
   }, []);
 
@@ -217,7 +241,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         dispatch({ type: 'ROLE_SELECTED', payload: { user, token: response.access_token } });
       } catch (error) {
-        dispatch({ type: 'SET_ERROR', payload: 'Registration failed. Please try again.' });
+        const message = error instanceof Error ? error.message : 'Registration failed. Please try again.';
+        dispatch({ type: 'SET_ERROR', payload: message });
       }
     },
     [state.pendingEmail, state.pendingPassword],

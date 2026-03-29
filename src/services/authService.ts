@@ -18,6 +18,15 @@ import { API_CONSTANTS } from '@/core/api/apiConstants';
 import { AuthResponse } from '@/models/authResponse';
 import { UserRole } from '@/models/user';
 
+async function getErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const data = (await response.json()) as { detail?: string; message?: string };
+    return data.detail || data.message || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export const AuthService = {
   /**
    * README ref: "Login Flow"
@@ -36,8 +45,11 @@ export const AuthService = {
       if (response.ok) {
         return await response.json();
       }
-      throw new Error(`Login failed: ${response.status}`);
+
+      const message = await getErrorMessage(response, `Login failed: ${response.status}`);
+      throw new Error(message);
     } catch (error) {
+      if (!import.meta.env.PROD) {
       console.warn('Backend unavailable, using mock login:', error);
       // Fallback: return mock auth response for demo
       return {
@@ -49,6 +61,12 @@ export const AuthService = {
           role: '', // Role will be set during role selection or from stored data
         },
       };
+      }
+
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Unable to sign in. Please try again.');
     }
   },
 
@@ -75,8 +93,11 @@ export const AuthService = {
       if (response.ok) {
         return await response.json();
       }
-      throw new Error(`Registration failed: ${response.status}`);
+
+      const message = await getErrorMessage(response, `Registration failed: ${response.status}`);
+      throw new Error(message);
     } catch (error) {
+      if (!import.meta.env.PROD) {
       console.warn('Backend unavailable, using mock registration:', error);
       return {
         access_token: 'mock_jwt_token_' + Date.now(),
@@ -87,6 +108,12 @@ export const AuthService = {
           role,
         },
       };
+      }
+
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('Unable to register. Please try again.');
     }
   },
 

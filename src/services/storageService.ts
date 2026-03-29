@@ -19,31 +19,42 @@ const STORAGE_KEYS = {
   PROFILE_COMPLETED: 'profile_completed',
 } as const;
 
+function withStorage<T>(action: (storage: Storage) => T, fallback: T): T {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return fallback;
+    }
+    return action(window.localStorage);
+  } catch {
+    return fallback;
+  }
+}
+
 export const StorageService = {
   // ── Auth Token ──────────────────────────────────
   saveAuthToken(token: string): void {
-    localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+    withStorage((storage) => storage.setItem(STORAGE_KEYS.AUTH_TOKEN, token), undefined);
   },
 
   getAuthToken(): string | null {
-    return localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+    return withStorage((storage) => storage.getItem(STORAGE_KEYS.AUTH_TOKEN), null);
   },
 
   saveRefreshToken(token: string): void {
-    localStorage.setItem(STORAGE_KEYS.REFRESH_TOKEN, token);
+    withStorage((storage) => storage.setItem(STORAGE_KEYS.REFRESH_TOKEN, token), undefined);
   },
 
   getRefreshToken(): string | null {
-    return localStorage.getItem(STORAGE_KEYS.REFRESH_TOKEN);
+    return withStorage((storage) => storage.getItem(STORAGE_KEYS.REFRESH_TOKEN), null);
   },
 
   // ── User Data ───────────────────────────────────
   saveUserData(userData: object): void {
-    localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+    withStorage((storage) => storage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData)), undefined);
   },
 
   getUserData<T>(): T | null {
-    const raw = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+    const raw = withStorage((storage) => storage.getItem(STORAGE_KEYS.USER_DATA), null);
     if (!raw) return null;
     try {
       return JSON.parse(raw) as T;
@@ -53,20 +64,23 @@ export const StorageService = {
   },
 
   saveUserRole(role: string): void {
-    localStorage.setItem(STORAGE_KEYS.USER_ROLE, role);
+    withStorage((storage) => storage.setItem(STORAGE_KEYS.USER_ROLE, role), undefined);
   },
 
   getUserRole(): string | null {
-    return localStorage.getItem(STORAGE_KEYS.USER_ROLE);
+    return withStorage((storage) => storage.getItem(STORAGE_KEYS.USER_ROLE), null);
   },
 
   // ── Profile Completion ──────────────────────────
   saveProfileCompleted(completed: boolean): void {
-    localStorage.setItem(STORAGE_KEYS.PROFILE_COMPLETED, JSON.stringify(completed));
+    withStorage(
+      (storage) => storage.setItem(STORAGE_KEYS.PROFILE_COMPLETED, JSON.stringify(completed)),
+      undefined,
+    );
   },
 
   getProfileCompleted(): boolean {
-    return localStorage.getItem(STORAGE_KEYS.PROFILE_COMPLETED) === 'true';
+    return withStorage((storage) => storage.getItem(STORAGE_KEYS.PROFILE_COMPLETED) === 'true', false);
   },
 
   // ── Investor Premium Status ─────────────────────
@@ -75,11 +89,18 @@ export const StorageService = {
    * Premium state is per user ID — switching accounts resets premium.
    */
   saveInvestorPremiumStatus(isPremium: boolean, userId: string): void {
-    localStorage.setItem(`${STORAGE_KEYS.INVESTOR_PREMIUM_PREFIX}${userId}`, JSON.stringify(isPremium));
+    withStorage(
+      (storage) =>
+        storage.setItem(`${STORAGE_KEYS.INVESTOR_PREMIUM_PREFIX}${userId}`, JSON.stringify(isPremium)),
+      undefined,
+    );
   },
 
   getInvestorPremiumStatus(userId: string): boolean {
-    return localStorage.getItem(`${STORAGE_KEYS.INVESTOR_PREMIUM_PREFIX}${userId}`) === 'true';
+    return withStorage(
+      (storage) => storage.getItem(`${STORAGE_KEYS.INVESTOR_PREMIUM_PREFIX}${userId}`) === 'true',
+      false,
+    );
   },
 
   // ── Clear All ───────────────────────────────────
@@ -88,11 +109,13 @@ export const StorageService = {
    * Clears local storage and resets provider state.
    */
   clearAll(): void {
-    localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
-    localStorage.removeItem(STORAGE_KEYS.USER_DATA);
-    localStorage.removeItem(STORAGE_KEYS.USER_ROLE);
-    localStorage.removeItem(STORAGE_KEYS.PROFILE_COMPLETED);
+    withStorage((storage) => {
+      storage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      storage.removeItem(STORAGE_KEYS.REFRESH_TOKEN);
+      storage.removeItem(STORAGE_KEYS.USER_DATA);
+      storage.removeItem(STORAGE_KEYS.USER_ROLE);
+      storage.removeItem(STORAGE_KEYS.PROFILE_COMPLETED);
+    }, undefined);
     // Note: Premium status is intentionally NOT cleared on logout
     // to preserve per-user premium state across sessions.
   },
