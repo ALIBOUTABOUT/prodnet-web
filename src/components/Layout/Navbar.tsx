@@ -14,6 +14,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useInvestorPayment } from '@/contexts/InvestorPaymentContext';
 import { useMessages } from '@/contexts/MessagesContext';
+import logoImage from '../../../logo.png';
 import {
   LogOut,
   User,
@@ -68,7 +69,7 @@ export function Navbar() {
         <div style={styles.container}>
           {/* Logo */}
           <Link to="/" style={styles.brand}>
-            <img src="/logo.png" alt="ProdNet" style={styles.logo} />
+            <img src={logoImage} alt="ProdNet" style={styles.logo} />
           </Link>
 
           {/* Desktop nav links */}
