@@ -1,0 +1,16 @@
+# Local dependencies
+node_modules
+
+# Build artifacts
+dist
+
+# TypeScript cache
+tsconfig.tsbuildinfo
+
+# Vite cache
+.vite
+
+# VCS and docs
+.git
+.gitignore
+README.md
